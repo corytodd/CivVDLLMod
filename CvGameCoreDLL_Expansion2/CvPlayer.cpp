@@ -5285,11 +5285,13 @@ bool CvPlayer::canRaze(CvCity* pCity, bool bIgnoreCapitals) const
 		return false;
 	}
 
+#if CT_RAZE_ANYTHING
 	// Can't raze a city that originally belonged to us
 	if(pCity->getOriginalOwner() == GetID())
 	{
 		return false;
 	}
+#endif // CT_RAZE_ANYTHING
 
 	ICvEngineScriptSystem1* pkScriptSystem = gDLL->GetScriptSystem();
 	if(pkScriptSystem)
@@ -5309,6 +5311,7 @@ bool CvPlayer::canRaze(CvCity* pCity, bool bIgnoreCapitals) const
 		}
 	}
 
+#if CT_RAZE_ANYTHING
 	// No razing of capitals
 	CvPlayer* pOriginalOwner = &GET_PLAYER(pCity->getOriginalOwner());
 	bool bOriginalCapital =	pCity->getX() == pOriginalOwner->GetOriginalCapitalX() &&
@@ -5324,6 +5327,7 @@ bool CvPlayer::canRaze(CvCity* pCity, bool bIgnoreCapitals) const
 	{
 		return false;
 	}
+#endif // CT_RAZE_ANYTHING
 
 	// No razing of cities with unique luxuries
 	ResourceTypes eResource = pCity->plot()->getResourceType();

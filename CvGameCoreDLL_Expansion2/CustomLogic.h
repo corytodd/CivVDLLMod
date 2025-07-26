@@ -1,0 +1,4 @@
+#pragma once
+
+#define CT_RAZE_ANYTHING 1
+#define CT_CITY_STATE_WARMONGERS 0
