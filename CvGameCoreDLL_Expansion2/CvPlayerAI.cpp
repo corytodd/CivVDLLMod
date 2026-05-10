@@ -115,10 +115,12 @@ void CvPlayerAI::AI_doTurnPost()
 		return;
 	}
 
+#if !CT_CITY_STATE_WARMONGERS
 	if(isMinorCiv())
 	{
 		return;
 	}
+#endif // CT_CITY_STATE_WARMONGERS
 
 	for(int i = 0; i < GC.getNumVictoryInfos(); ++i)
 	{

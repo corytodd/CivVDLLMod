@@ -1909,6 +1909,8 @@ void CvMinorCivAI::DoPickPersonality()
 	CvFlavorManager* pFlavorManager = m_pPlayer->GetFlavorManager();
 	int* pFlavors = pFlavorManager->GetAllPersonalityFlavors();
 
+#if !CT_CITY_STATE_WARMONGERS
+
 	MinorCivPersonalityTypes eRandPersonality = (MinorCivPersonalityTypes) GC.getGame().getJonRandNum(NUM_MINOR_CIV_PERSONALITY_TYPES, "Minor Civ AI: Picking Personality for this Game (should happen only once per player)");
 	m_ePersonality = eRandPersonality;
 
@@ -1927,11 +1929,21 @@ void CvMinorCivAI::DoPickPersonality()
 		pFlavorManager->ResetToBasePersonality();
 		break;
 	}
+#else
+
+	// All-in offensive
+	pFlavors[eFlavorCityDefense] = 0;
+	pFlavors[eFlavorDefense] = 0;
+	pFlavors[eFlavorOffense] = 10;
+	pFlavorManager->ResetToBasePersonality();
+
+#endif
 }
 
 /// What is this civ's trait?
 MinorCivTraitTypes CvMinorCivAI::GetTrait() const
 {
+#if !CT_CITY_STATE_WARMONGERS
 	CvMinorCivInfo* pkMinorCivInfo = GC.getMinorCivInfo(GetMinorCivType());
 	if(pkMinorCivInfo)
 	{
@@ -1939,6 +1951,9 @@ MinorCivTraitTypes CvMinorCivAI::GetTrait() const
 	}
 
 	return NO_MINOR_CIV_TRAIT_TYPE;
+#else
+	return MINOR_CIV_TRAIT_MILITARISTIC;
+#endif
 }
 
 /// Does this civ have a unique unit? (only for Militaristic)
@@ -2001,9 +2016,45 @@ void CvMinorCivAI::DoTurn()
 		DoUnitSpawnTurn();
 
 		DoIntrusion();
+
+#if CT_CITY_STATE_WARMONGERS
+		DoWarmongerAggression();
+#endif
 	}
 }
 
+
+#if CT_CITY_STATE_WARMONGERS
+/// Proactively declare war on nearby major civs to act as aggressors.
+void CvMinorCivAI::DoWarmongerAggression()
+{
+	// Need enough units to pose a real threat
+	if (GetPlayer()->getNumMilitaryUnits() < 3)
+		return;
+
+	// Only one war declaration per turn
+	for (int iPlayerLoop = 0; iPlayerLoop < MAX_MAJOR_CIVS; iPlayerLoop++)
+	{
+		PlayerTypes ePlayer = (PlayerTypes)iPlayerLoop;
+		CvPlayer& kPlayer = GET_PLAYER(ePlayer);
+
+		if (!kPlayer.isAlive()) continue;
+		if (IsAtWarWithPlayersTeam(ePlayer)) continue;
+		if (!IsHasMetPlayer(ePlayer)) continue;
+
+		PlayerProximityTypes eProximity = GetPlayer()->GetProximityToPlayer(ePlayer);
+		if (eProximity < PLAYER_PROXIMITY_CLOSE) continue;
+
+		// Neighbors: ~10% per turn. Close: ~4% per turn.
+		int iChance = (eProximity == PLAYER_PROXIMITY_NEIGHBORS) ? 10 : 4;
+		if (GC.getGame().getJonRandNum(100, "CS Warmonger Aggression") < iChance)
+		{
+			GET_TEAM(GetPlayer()->getTeam()).declareWar(kPlayer.getTeam());
+			return;
+		}
+	}
+}
+#endif
 
 /// Minor is now dead or alive (haha, get it?)
 void CvMinorCivAI::DoChangeAliveStatus(bool bAlive)
@@ -7567,7 +7618,7 @@ void CvMinorCivAI::DoUnitSpawnTurn()
 	{
 		eMajor = (PlayerTypes) iMajorLoop;
 
-		if(IsUnitSpawningAllowed(eMajor))
+			if(IsUnitSpawningAllowed(eMajor))
 		{
 			// Tick down
 			if(GetUnitSpawnCounter(eMajor) > 0)

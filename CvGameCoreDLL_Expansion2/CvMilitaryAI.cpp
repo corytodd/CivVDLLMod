@@ -2149,7 +2149,7 @@ void CvMilitaryAI::UpdateBaseData()
 	m_iMandatoryReserveSize = max(1,m_iMandatoryReserveSize);
 
 	// now we add in the strike forces we think we will need
-	if(m_pPlayer->isMinorCiv())
+	if(m_pPlayer->isMinorCiv() && !CT_CITY_STATE_WARMONGERS)
 	{
 		m_iMandatoryReserveSize = max(1,m_iMandatoryReserveSize/2);
 		iNumUnitsWanted = 0;
@@ -2415,7 +2415,7 @@ void CvMilitaryAI::UpdateMilitaryStrategies()
 			continue;
 
 		// Minor Civs can't run some Strategies
-		if(GetPlayer()->isMinorCiv() && pStrategy->IsNoMinorCivs())
+		if(GetPlayer()->isMinorCiv() && pStrategy->IsNoMinorCivs() && !CT_CITY_STATE_WARMONGERS)
 			continue;
 
 		// Some strategies ONLY for Minor Civs
@@ -3289,7 +3289,7 @@ void CvMilitaryAI::MakeOffensivePurchases()
 
 	CvUnit *pUnit;
 
-	if (m_pPlayer->isMinorCiv())
+	if (m_pPlayer->isMinorCiv() && !CT_CITY_STATE_WARMONGERS)
 	{
 		return;
 	}

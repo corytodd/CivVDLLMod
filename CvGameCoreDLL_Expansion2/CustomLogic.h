@@ -1,5 +1,5 @@
 #pragma once
 
 #define CT_RAZE_ANYTHING 1
-#define CT_CITY_STATE_WARMONGERS 0
+#define CT_CITY_STATE_WARMONGERS 1
 #define CT_APATHETIC_PIETY 1

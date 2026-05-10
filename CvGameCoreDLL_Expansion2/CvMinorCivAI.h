@@ -204,6 +204,10 @@ public:
 	void DoTurnStatus();
 	MinorCivStatusTypes GetStatus() const;
 
+#if CT_CITY_STATE_WARMONGERS
+	void DoWarmongerAggression();
+#endif
+
 	void DoAddStartingResources(CvPlot* pCityPlot);
 	void DoRemoveStartingResources(CvPlot* pCityPlot);
 
