@@ -4423,6 +4423,13 @@ CvCity* CvReligionAI::ChooseMissionaryTargetCity(UnitHandle pUnit)
 	{
 		// Only spread to living AI players
 		CvPlayer& kPlayer = GET_PLAYER((PlayerTypes)iI);
+
+
+#if CT_APATHETIC_PIETY
+		if (kPlayer.isHuman())
+			continue;
+#endif
+
 		if(kPlayer.isAlive() && !kPlayer.isHuman())
 		{
 			// Loop through each of their cities
@@ -4708,6 +4715,13 @@ CvCity *CvReligionAI::ChooseProphetConversionCity(bool bOnlyBetterThanEnhancingR
 		{
 			// Only spread to living AI players
 			CvPlayer &kLoopPlayer = GET_PLAYER((PlayerTypes)iPlayerLoop);
+
+#if CT_APATHETIC_PIETY
+			if (kLoopPlayer.isHuman())
+				continue;
+#endif
+
+
 			if(kLoopPlayer.isAlive() && iPlayerLoop != m_pPlayer->GetID() && !kLoopPlayer.isHuman())
 			{
 				int iCityLoop;
