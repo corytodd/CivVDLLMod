@@ -2032,6 +2032,8 @@ void CvMinorCivAI::DoWarmongerAggression()
 	if (GetPlayer()->getNumMilitaryUnits() < 3)
 		return;
 
+	CvTeam& kOurTeam = GET_TEAM(GetPlayer()->getTeam());
+
 	// Only one war declaration per turn
 	for (int iPlayerLoop = 0; iPlayerLoop < MAX_MAJOR_CIVS; iPlayerLoop++)
 	{
@@ -2042,14 +2044,26 @@ void CvMinorCivAI::DoWarmongerAggression()
 		if (IsAtWarWithPlayersTeam(ePlayer)) continue;
 		if (!IsHasMetPlayer(ePlayer)) continue;
 
+		// Never attack friends or allies
+		if (IsFriends(ePlayer)) continue;
+
+		// 10-turn peace cooldown (mirrors major civ behaviour)
+		TeamTypes eTheirTeam = kPlayer.getTeam();
+		int iTurnPeaceMade = kOurTeam.GetTurnMadePeaceTreatyWithTeam(eTheirTeam);
+		if (iTurnPeaceMade != -1 && GC.getGame().getElapsedGameTurns() - iTurnPeaceMade < 10)
+			continue;
+
 		PlayerProximityTypes eProximity = GetPlayer()->GetProximityToPlayer(ePlayer);
 		if (eProximity < PLAYER_PROXIMITY_CLOSE) continue;
 
-		// Neighbors: ~10% per turn. Close: ~4% per turn.
-		int iChance = (eProximity == PLAYER_PROXIMITY_NEIGHBORS) ? 10 : 4;
+		// Scale aggression by how much the CS dislikes the player.
+		// Influence starts at 0 (neutral); negative = hostile. Range roughly 0 to -60.
+		int iHatred = max(0, -GetBaseFriendshipWithMajor(ePlayer));
+		// Neighbors: 5–15%. Close: 2–8%.
+		int iChance = (eProximity == PLAYER_PROXIMITY_NEIGHBORS) ? (5 + (iHatred / 6)) : (2 + (iHatred / 10));
 		if (GC.getGame().getJonRandNum(100, "CS Warmonger Aggression") < iChance)
 		{
-			GET_TEAM(GetPlayer()->getTeam()).declareWar(kPlayer.getTeam());
+			kOurTeam.declareWar(eTheirTeam);
 			return;
 		}
 	}
